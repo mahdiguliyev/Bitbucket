@@ -1,3 +1,4 @@
+using Bitbucket.AutoMapper.Profiles;
 using Bitbucket.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -40,7 +41,7 @@ namespace Bitbucket
                 .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             services.AddDbContext<BitbucketDbContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("BookStoresDB")));
+                    options.UseSqlServer(Configuration.GetConnectionString("BitbucketDB")));
 
             var jwtSection = Configuration.GetSection("JWTSettings");
             services.Configure<JWTSettings>(jwtSection);
@@ -48,7 +49,7 @@ namespace Bitbucket
             //to validate the token which has been sent by clients
             var appSettings = jwtSection.Get<JWTSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.SecretKey);
-
+            services.AddAutoMapper(typeof(UserProfile));
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

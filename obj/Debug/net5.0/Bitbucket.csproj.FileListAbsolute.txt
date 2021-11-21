@@ -137,3 +137,5 @@ C:\Projects\Bitbucket\Bitbucket\obj\Debug\net5.0\Bitbucket.dll
 C:\Projects\Bitbucket\Bitbucket\obj\Debug\net5.0\ref\Bitbucket.dll
 C:\Projects\Bitbucket\Bitbucket\obj\Debug\net5.0\Bitbucket.pdb
 C:\Projects\Bitbucket\Bitbucket\obj\Debug\net5.0\Bitbucket.genruntimeconfig.cache
+C:\Projects\Bitbucket\Bitbucket\bin\Debug\net5.0\AutoMapper.dll
+C:\Projects\Bitbucket\Bitbucket\bin\Debug\net5.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
