@@ -1,4 +1,5 @@
 ﻿using Bitbucket.Models;
+using Bitbucket.Repositories.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,14 +22,16 @@ namespace Bitbucket.Controllers
     {
         private readonly BitbucketDbContext _context;
         private readonly JWTSettings _jwtsettings;
+        private readonly IUserRepository _userRepository;
         public UserController(BitbucketDbContext context,
-                               IOptions<JWTSettings> jwtsettings)
+                               IOptions<JWTSettings> jwtsettings, IUserRepository userRepository)
         {
             _context = context;
             _jwtsettings = jwtsettings.Value;
+            _userRepository = userRepository;
         }
 
-        [HttpPost("Login")]
+        [HttpPost("Init")]
         public async Task<ActionResult<UserWithToken>> Init([FromBody] User user)
         {
             var useR = await _context.Users
@@ -43,18 +46,43 @@ namespace Bitbucket.Controllers
                 useR.RefreshTokens.Add(refreshToken);
                 await _context.SaveChangesAsync();
 
+                UserLoginAttempt userLoginAttempt = new UserLoginAttempt();
+                userLoginAttempt.AttemptTime = DateTime.Now;
+                userLoginAttempt.IsSuccess = true;
+                useR.ListOfLogins.Add(userLoginAttempt);
+
                 userWithToken = new UserWithToken(useR);
                 userWithToken.RefreshToken = refreshToken.Token;
             }
 
             if (userWithToken == null)
             {
+                UserLoginAttempt userLoginAttempt = new UserLoginAttempt();
+                userLoginAttempt.AttemptTime = DateTime.Now;
+                userLoginAttempt.IsSuccess = false;
+                useR.ListOfLogins.Add(userLoginAttempt);
+
                 return NotFound();
             }
+            await _context.SaveChangesAsync();
 
             userWithToken.AccessToken = GenerateAccessToken(useR.Id);
 
             return userWithToken;
+        }
+        [HttpPost("GenerateUser")]
+        public async Task<ActionResult<User>> GenerateUser()
+        {
+            User newUser = new User();
+            newUser.Email = _userRepository.GenerateRandomEmail();
+            newUser.Password = _userRepository.GenerateRandomPassword();
+            newUser.Name = _userRepository.GenerateRandomNameAndSurname();
+            newUser.Surname = _userRepository.GenerateRandomNameAndSurname();
+
+            await _context.Users.AddAsync(newUser);
+            await _context.SaveChangesAsync();
+
+            return newUser;
         }
         private RefreshToken GenerateRefreshToken()
         {
