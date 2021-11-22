@@ -9,6 +9,9 @@ namespace Bitbucket.Repositories.IRepository
     public interface IUserRepository : IRepositoryBase<User>
     {
         Task<User> GetByEmail(string email);
-        Task<UserLoginAttempt> Statistic(DateTime metric, bool? isSuccess, string startDate = null, string endDate = null);
+        Task<List<KeyValuePair<string, string>>> Statistic(string metric, bool? isSuccess, DateTime? startDate, DateTime? endDate);
+        string GenerateRandomPassword(int size = 0);
+        string GenerateRandomEmail();
+        string GenerateRandomNameAndSurname();
     }
 }
