@@ -31,8 +31,8 @@ namespace Bitbucket.Repositories
 
         public async Task<List<KeyValuePair<string, string>>> Statistic(string metric, bool? isSuccess, DateTime? startDate, DateTime? endDate)
         {
-            string username = GenerateRandomUsername();
-            string password = GenerateRandomPassword(12);
+            //string username = GenerateRandomUsername();
+            //string password = GenerateRandomPassword(12);
             List<KeyValuePair<string, string>> statistics = new List<KeyValuePair<string, string>>();
 
             var userLoginAttempts = await BitbucketDbContext.UserLoginAttempts.ToListAsync();
