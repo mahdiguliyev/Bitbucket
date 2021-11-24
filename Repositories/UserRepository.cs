@@ -39,6 +39,15 @@ namespace Bitbucket.Repositories
             {
                 userLoginAttempts = await BitbucketDbContext.UserLoginAttempts.Where(st => (!startDate.HasValue || st.AttemptTime >= startDate)
                 && (!endDate.HasValue || st.AttemptTime <= endDate)).ToListAsync();
+
+                //foreach (var userLoginAttempt in userLoginAttempts)
+                //{
+                //    Statistic statistic = new Statistic();
+                //    statistic.Period = userLoginAttempt.AttemptTime.ToString();
+                //    statistic.Value = userLoginAttempts.Count().ToString();
+
+                //    statistics.Add(statistic);
+                //}
             }
             if (isSuccess != null)
             {
@@ -84,7 +93,7 @@ namespace Bitbucket.Repositories
             }
             else if(metric == "year")
             {
-                TimeSpan interval = new TimeSpan(8760, 0, 0);
+                TimeSpan interval = new TimeSpan(8784, 0, 0);
                 var groupedByYear = from ula in userLoginAttempts
                                      group ula by ula.AttemptTime.Ticks / interval.Ticks
                                     into grouped_ula
