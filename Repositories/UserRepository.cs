@@ -29,11 +29,9 @@ namespace Bitbucket.Repositories
             return user;
         }
 
-        public async Task<List<KeyValuePair<string, string>>> Statistic(string metric, bool? isSuccess, DateTime? startDate, DateTime? endDate)
+        public async Task<List<Statistic>> Statistic(string metric, bool? isSuccess, DateTime? startDate, DateTime? endDate)
         {
-            //string username = GenerateRandomUsername();
-            //string password = GenerateRandomPassword(12);
-            List<KeyValuePair<string, string>> statistics = new List<KeyValuePair<string, string>>();
+            List<Statistic> statistics = new List<Statistic>();
 
             var userLoginAttempts = await BitbucketDbContext.UserLoginAttempts.ToListAsync();
 
@@ -52,26 +50,53 @@ namespace Bitbucket.Repositories
             }
             if (metric == "hour")
             {
-                foreach (var userLoginAttempt in userLoginAttempts)
+                TimeSpan interval = new TimeSpan(6, 0, 0);
+                var groupedByHour = from ula in userLoginAttempts
+                                    group ula by ula.AttemptTime.Ticks / interval.Ticks
+                                    into grouped_ula
+                                    select new { Period = new DateTime(grouped_ula.Key * interval.Ticks), Values = grouped_ula.Count().ToString() };
+
+                foreach (var data in groupedByHour)
                 {
-                    statistics.Add(new KeyValuePair<string, string>("Period", userLoginAttempt.AttemptTime.ToString("MM/dd/yyyy HH:mm")));
-                    statistics.Add(new KeyValuePair<string, string>("Value", userLoginAttempts.Count().ToString()));
+                    Statistic statistic = new Statistic();
+                    statistic.Period = data.Period.ToString();
+                    statistic.Value = data.Values.ToString();
+
+                    statistics.Add(statistic);
                 }
             }
             else if (metric == "month")
             {
-                foreach (var userLoginAttempt in userLoginAttempts)
+                TimeSpan interval = new TimeSpan(730, 0, 0);
+                var groupedByMonth = from ula in userLoginAttempts
+                                    group ula by ula.AttemptTime.Ticks / interval.Ticks
+                                    into grouped_ula
+                                    select new { Period = new DateTime(grouped_ula.Key * interval.Ticks), Values = grouped_ula.Count().ToString() };
+
+                foreach (var data in groupedByMonth)
                 {
-                    statistics.Add(new KeyValuePair<string, string>("Period", userLoginAttempt.AttemptTime.ToString("yyyy MMMM")));
-                    statistics.Add(new KeyValuePair<string, string>("Value", userLoginAttempts.Count().ToString()));
+                    Statistic statistic = new Statistic();
+                    statistic.Period = data.Period.ToString("yyyy MMMM");
+                    statistic.Value = data.Values.ToString();
+
+                    statistics.Add(statistic);
                 }
             }
             else if(metric == "year")
             {
-                foreach (var userLoginAttempt in userLoginAttempts)
+                TimeSpan interval = new TimeSpan(8760, 0, 0);
+                var groupedByYear = from ula in userLoginAttempts
+                                     group ula by ula.AttemptTime.Ticks / interval.Ticks
+                                    into grouped_ula
+                                     select new { Period = new DateTime(grouped_ula.Key * interval.Ticks), Values = grouped_ula.Count().ToString() };
+
+                foreach (var data in groupedByYear)
                 {
-                    statistics.Add(new KeyValuePair<string, string>("Period", userLoginAttempt.AttemptTime.ToString("yyyy")));
-                    statistics.Add(new KeyValuePair<string, string>("Value", userLoginAttempts.Count().ToString()));
+                    Statistic statistic = new Statistic();
+                    statistic.Period = data.Period.ToString("yyyy");
+                    statistic.Value = data.Values.ToString();
+
+                    statistics.Add(statistic);
                 }
             }
 
