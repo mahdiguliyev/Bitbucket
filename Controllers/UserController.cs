@@ -32,11 +32,11 @@ namespace Bitbucket.Controllers
         }
 
         [HttpPost("Init")]
-        public async Task<ActionResult<UserWithToken>> Init([FromBody] User user)
+        public async Task<ActionResult<UserWithToken>> Init(string email, string password)
         {
             var useR = await _context.Users
                        .Include(u => u.ListOfLogins)
-                       .Where(u => u.Email == user.Email && u.Password == user.Password).FirstOrDefaultAsync();
+                       .Where(u => u.Email == email && u.Password == password).FirstOrDefaultAsync();
 
             UserWithToken userWithToken = null;
 
@@ -58,9 +58,18 @@ namespace Bitbucket.Controllers
             if (userWithToken == null)
             {
                 UserLoginAttempt userLoginAttempt = new UserLoginAttempt();
-                userLoginAttempt.AttemptTime = DateTime.Now;
-                userLoginAttempt.IsSuccess = false;
-                useR.ListOfLogins.Add(userLoginAttempt);
+                var userByEmail = await _context.Users
+                       .Include(u => u.ListOfLogins)
+                       .Where(u => u.Email == email).FirstOrDefaultAsync();
+
+                if (userByEmail != null)
+                {
+                    userLoginAttempt.AttemptTime = DateTime.Now;
+                    userLoginAttempt.IsSuccess = false;
+                }
+                
+                userByEmail.ListOfLogins.Add(userLoginAttempt);
+                await _context.SaveChangesAsync();
 
                 return NotFound();
             }
@@ -69,6 +78,16 @@ namespace Bitbucket.Controllers
             userWithToken.AccessToken = GenerateAccessToken(useR.Id);
 
             return userWithToken;
+        }
+        [HttpGet("Statistic")]
+        public Task<List<Statistic>> Statistic(string metric, bool? isSuccess, DateTime? startDate, DateTime? endDate)
+        {
+            var statistics = _userRepository.Statistic(metric, isSuccess, startDate, endDate);
+
+            return Task.Run(() =>
+            {
+                return statistics;
+            });
         }
         [HttpPost("GenerateUser")]
         public async Task<ActionResult<User>> GenerateUser()
