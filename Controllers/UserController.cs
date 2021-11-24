@@ -89,6 +89,13 @@ namespace Bitbucket.Controllers
                 return statistics;
             });
         }
+        [HttpGet("GetByEmail")]
+        public Task<User> GetByEmail(string email)
+        {
+            var userByEmail = _userRepository.GetByEmail(email);
+
+            return userByEmail;
+        }
         [HttpPost("GenerateUser")]
         public async Task<ActionResult<User>> GenerateUser()
         {
