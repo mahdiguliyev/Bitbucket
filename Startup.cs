@@ -1,5 +1,7 @@
 using Bitbucket.AutoMapper.Profiles;
 using Bitbucket.Models;
+using Bitbucket.Repositories;
+using Bitbucket.Repositories.IRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -42,6 +44,8 @@ namespace Bitbucket
 
             services.AddDbContext<BitbucketDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("BitbucketDB")));
+
+            services.AddScoped<IUserRepository, UserRepository>();
 
             var jwtSection = Configuration.GetSection("JWTSettings");
             services.Configure<JWTSettings>(jwtSection);
